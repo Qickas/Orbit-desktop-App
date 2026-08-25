@@ -1,0 +1,28 @@
+# Python caches and test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local environments and packaging output
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Orbit's local conversation memory
+data/
