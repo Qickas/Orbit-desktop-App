@@ -26,3 +26,7 @@ Thumbs.db
 
 # Orbit's local conversation memory
 data/
+
+# Tauri and frontend build output
+node_modules/
+src-tauri/target/

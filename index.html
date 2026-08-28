@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ORBIT</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-nav" aria-label="Huvudmeny">
+        <div class="brand-lockup"><span class="brand-orbit">ORBIT</span><span class="brand-subtitle">DESK COMPANION</span></div>
+        <nav class="navigation">
+          <button class="nav-item is-active" type="button" data-view="home"><span>01</span>Hem</button>
+          <button class="nav-item" type="button" data-view="conversation"><span>02</span>Samtal</button>
+          <button class="nav-item" type="button" data-view="memory"><span>03</span>Minne</button>
+          <button class="nav-item" type="button" data-view="activity"><span>04</span>Aktivitet</button>
+          <button class="nav-item" type="button" data-view="devices"><span>05</span>Enheter</button>
+          <button class="nav-item" type="button" data-view="automations"><span>06</span>Automationer</button>
+          <button class="nav-item" type="button" data-view="status"><span>07</span>Status</button>
+          <button class="nav-item" type="button" data-view="settings"><span>08</span>Inställningar</button>
+        </nav>
+        <div class="sidebar-status"><span class="status-light" aria-hidden="true"></span><div><p>LOKAL ANSLUTNING</p><strong id="sidebar-state">Startar</strong></div></div>
+      </aside>
+
+      <main class="app-main">
+        <header class="app-header"><div><p id="page-kicker" class="page-kicker">ORBIT / ÖVERSIKT</p><h1 id="page-title">God morgon.</h1></div><span id="connection" class="connection connection--waiting">Startar Core</span></header>
+
+        <section id="view-home" class="view is-active">
+          <div class="home-hero">
+            <div class="home-hero__copy"><p class="eyebrow">DIN LOKALA KOMPANJON</p><h2>En närvarande hjärna,<br />på din dator.</h2><p id="home-greeting">ORBIT väcker sin lokala hjärna.</p><button class="primary-action" type="button" data-open-view="conversation">Öppna samtalet <span>→</span></button></div>
+            <div class="orbital-presence" aria-hidden="true"><div class="halo halo--outer"></div><div class="halo halo--inner"></div><div class="eyes"><i></i><i></i></div></div>
+          </div>
+          <div class="snapshot-grid" aria-label="ORBIT just nu">
+            <article class="snapshot-card snapshot-card--core"><p>LOKAL HJÄRNA</p><strong id="home-model">Söker…</strong><span id="home-brain-detail">Ollama ansluts lokalt</span></article>
+            <article class="snapshot-card"><p>DATORLÄGE</p><strong id="home-computer">Av</strong><span id="home-computer-detail">Kräver alltid ditt val</span></article>
+            <article class="snapshot-card"><p>SAMTAL</p><strong id="home-conversation-count">0</strong><span>meddelanden i denna session</span></article>
+          </div>
+          <section class="home-note"><span class="home-note__mark">+</span><p><strong>Allt stannar hos dig.</strong> ORBIT körs mot din lokala Core och din lokala modell.</p></section>
+        </section>
+
+        <section id="view-conversation" class="view" hidden>
+          <div class="conversation-layout">
+            <section class="conversation-stage">
+              <div class="conversation-presence"><div class="presence-eyes" aria-hidden="true"><i></i><i></i></div><div><p class="eyebrow">SAMTAL MED ORBIT</p><h2>Närvarande. Lokal. Redo.</h2><p id="presence-copy">Jag vaknar och letar efter min lokala hjärna.</p></div></div>
+              <section id="messages" class="messages" aria-live="polite"></section>
+              <form id="chat-form" class="composer"><input id="chat-input" autocomplete="off" placeholder="Skriv till ORBIT…" aria-label="Meddelande till Orbit" /><button id="mic-button" class="mic-button" type="button" aria-pressed="false">Prata</button><button id="send-button" type="submit">Skicka <span>↗</span></button></form>
+            </section>
+            <aside class="conversation-aside"><p class="eyebrow">FÖRSLAG</p><button class="prompt-chip" type="button" data-prompt="Hej ORBIT, hur är läget?">Hur är läget?</button><button class="prompt-chip" type="button" data-prompt="Hjälp mig att planera min dag.">Planera min dag</button><button class="prompt-chip" type="button" data-prompt="Vad minns du från vårt samtal?">Vad minns du?</button><p class="aside-note">Svaren kommer från din lokala modell. ORBIT säger till när den inte vet.</p></aside>
+          </div>
+        </section>
+
+        <section id="view-memory" class="view" hidden><div class="view-intro"><p class="eyebrow">KONTINUITET</p><h2>Minne som går att lita på.</h2><p>ORBIT:s minne hör till din lokala Core. Här visar vi snart granskningsbara minnesposter och deras källor.</p></div><div class="empty-state"><span class="empty-state__number">03</span><h3>Minnevyn kopplas in härnäst.</h3><p>Inga uppgifter skickas till en molntjänst för den här vyn.</p></div></section>
+
+        <section id="view-activity" class="view" hidden><div class="view-intro"><p class="eyebrow">LOKAL HÄNDELSELOGG</p><h2>Det som händer, synligt för dig.</h2><p>Den här sessionens anslutningar och handlingar visas här. Datorläge loggar bara åtgärder som du startat.</p></div><ol id="activity-feed" class="activity-feed" aria-live="polite"><li class="activity-empty">Inga händelser ännu.</li></ol></section>
+
+        <section id="view-devices" class="view" hidden><div class="view-intro"><p class="eyebrow">DIN MASKIN</p><h2>Lokala byggstenar.</h2><p>ORBIT använder bara de komponenter som är installerade på den här datorn.</p></div><div class="device-grid"><article class="device-card"><span class="device-index">A</span><div><h3>ORBIT Core</h3><p id="device-core">Väntar på anslutning</p></div></article><article class="device-card"><span class="device-index">B</span><div><h3>Ollama</h3><p id="device-model">Söker lokal modell</p></div></article><article class="device-card"><span class="device-index">C</span><div><h3>Mikrofon</h3><p>Aktiveras först när du trycker Prata.</p></div></article></div></section>
+
+        <section id="view-automations" class="view" hidden>
+          <div class="view-intro"><p class="eyebrow">KONTROLLERAD HJÄLP</p><h2>Datorläge.</h2><p>Du väljer appen. ORBIT får bara klicka på synliga kontroller i just den appen och sessionen stänger själv.</p></div>
+          <section class="computer-panel" aria-label="Datorläge"><div class="computer-panel__header"><div><p class="computer-panel__eyebrow">SÄKER SESSION</p><p id="computer-status" class="computer-panel__status">Av</p></div><div class="computer-panel__actions"><button id="computer-toggle" type="button">Starta i 10 min</button><button id="computer-stop" class="computer-stop" type="button">STOPPA NU</button></div></div><p id="computer-help" class="computer-panel__help">När Datorläge är på: växla till appen du vill använda, kom tillbaka hit och hämta dess synliga kontroller.</p><button id="computer-refresh" class="computer-refresh" type="button">Hämta aktiv app</button><div id="computer-context" class="computer-context">Inga kontroller hämtade ännu.</div><div class="computer-type-row"><input id="computer-text" autocomplete="off" placeholder="Text ORBIT ska skriva i valt fält" aria-label="Text som Orbit ska skriva" /><button id="computer-type" type="button">Skriv</button></div></section>
+        </section>
+
+        <section id="view-status" class="view" hidden><div class="view-intro"><p class="eyebrow">RUNTIMESANNING</p><h2>Systemstatus.</h2><p>Det här är den faktiska lokala status som Windows-appen får från ORBIT Core.</p></div><pre id="status-json" class="status-json">Väntar på Core…</pre></section>
+        <section id="view-settings" class="view" hidden><div class="view-intro"><p class="eyebrow">DIN UPPLEVELSE</p><h2>Inställningar.</h2><p>Små val för hur ORBIT känns, utan att ändra din Core eller dina minnen.</p></div><section class="setting-row"><div><h3>Diskreta ljud</h3><p>Små lokala signaler när ORBIT tänker och svarar.</p></div><button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true">Ljud: På</button></section><section class="setting-row"><div><h3>Röst</h3><p>Röst är avstängd tills vidare. Samtalet fungerar alltid i text.</p></div><span class="setting-static">AV</span></section></section>
+      </main>
+      <div id="orbit-drifter" class="orbit-drifter" aria-hidden="true">
+        <div class="floating-eyes"><i></i><i></i></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -40,6 +40,20 @@ ollama pull llama3.2
 python scripts/terminal_chat.py
 ```
 
+## Desktop authentication boundary
+
+The Tauri webview never calls the Core API directly. Rust owns the local
+credential loaded from the OS keyring and sends authenticated requests to the
+loopback Core. The webview communicates only through fixed Tauri commands and
+never receives the credential.
+
+`/healthz` is unauthenticated liveness only. Readiness is the authenticated
+`/v1/status` request. All other `/v1/*` routes require one exact Bearer header.
+
+The bundled web UI is therefore Desktop/Tauri-only for Core operations. A
+future private mobile client needs its own authenticated transport; this
+project does not provide an unauthenticated browser compatibility path.
+
 The chat stores local memory in `data/memory.json`. Use `--no-persist` for a
 temporary session or `--model qwen3:8b` to choose another installed model.
 
