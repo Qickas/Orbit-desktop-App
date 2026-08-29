@@ -114,22 +114,19 @@ function showSpeakingExpression() {
 }
 function updateSoundToggle() { soundToggle.textContent = `Ljud: ${soundEnabled ? "På" : "Av"}`; soundToggle.setAttribute("aria-pressed", String(soundEnabled)); }
 
-function updateComputerMode(status: ComputerStatus) {
-  latestComputerStatus = { ...latestComputerStatus, ...status };
-  computerModeActive = latestComputerStatus.active;
-  const remaining = latestComputerStatus.remainingSeconds ?? 0;
-  const minutes = Math.floor(remaining / 60);
-  const seconds = String(remaining % 60).padStart(2, "0");
-  computerStatus.textContent = latestComputerStatus.active ? `På: ${minutes}:${seconds}` : "Av";
-  homeComputer.textContent = latestComputerStatus.active ? "På" : "Av";
-  homeComputerDetail.textContent = latestComputerStatus.active ? `${minutes}:${seconds} återstår` : "Kräver alltid ditt val";
-  computerToggle.textContent = latestComputerStatus.active ? "Starta om 10 min" : "Starta i 10 min";
-  computerToggle.disabled = !coreReady;
-  computerStop.disabled = !latestComputerStatus.active;
-  computerRefresh.disabled = !latestComputerStatus.active;
-  computerText.disabled = !latestComputerStatus.active || !selectedTextControl;
-  computerType.disabled = !latestComputerStatus.active || !selectedTextControl;
-  computerHelp.textContent = latestComputerStatus.active ? latestComputerStatus.targetWindow ? `Målapp: ${latestComputerStatus.targetWindow}. Hämta kontroller när du vill uppdatera.` : "Växla kort till appen ORBIT ska använda och kom sedan tillbaka hit." : "När Datorläge är på: växla till appen du vill använda, kom tillbaka hit och hämta dess synliga kontroller.";
+function updateComputerMode(_status: ComputerStatus) {
+  latestComputerStatus = { active: false };
+  computerModeActive = false;
+  computerStatus.textContent = "Blockerat";
+  homeComputer.textContent = "Blockerat";
+  homeComputerDetail.textContent = "Väntar på verifierad Capability Truth";
+  computerToggle.textContent = "Ej tillgängligt";
+  computerToggle.disabled = true;
+  computerStop.disabled = true;
+  computerRefresh.disabled = true;
+  computerText.disabled = true;
+  computerType.disabled = true;
+  computerHelp.textContent = "Datorläge är blockerat tills nya Core har en verifierad och fail-safe styrningskapacitet.";
 }
 
 function clearComputerContext(message: string) { selectedTextControl = undefined; computerContext.textContent = message; computerText.value = ""; }

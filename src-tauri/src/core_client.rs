@@ -50,11 +50,6 @@ enum CoreRoute {
     Status,
     Conversation,
     VoiceState,
-    ComputerStatus,
-    ComputerContext,
-    ComputerSession,
-    ComputerClick,
-    ComputerType,
 }
 
 impl CoreRoute {
@@ -63,11 +58,6 @@ impl CoreRoute {
             Self::Status => "/v1/status",
             Self::Conversation => "/v1/conversation",
             Self::VoiceState => "/v1/voice/state",
-            Self::ComputerStatus => "/v1/computer/status",
-            Self::ComputerContext => "/v1/computer/context",
-            Self::ComputerSession => "/v1/computer/session",
-            Self::ComputerClick => "/v1/computer/click",
-            Self::ComputerType => "/v1/computer/type",
         }
     }
 }
@@ -127,43 +117,6 @@ impl CoreClient {
             CoreRoute::VoiceState,
             Method::POST,
             Some(json!({ "state": state })),
-        )
-        .await
-    }
-
-    pub async fn computer_status(&self) -> Result<Value, CoreClientError> {
-        self.request_json(CoreRoute::ComputerStatus, Method::GET, None)
-            .await
-    }
-
-    pub async fn computer_context(&self) -> Result<Value, CoreClientError> {
-        self.request_json(CoreRoute::ComputerContext, Method::GET, None)
-            .await
-    }
-
-    pub async fn computer_session(&self, action: String) -> Result<Value, CoreClientError> {
-        self.request_json(
-            CoreRoute::ComputerSession,
-            Method::POST,
-            Some(json!({ "action": action })),
-        )
-        .await
-    }
-
-    pub async fn computer_click(&self, id: String) -> Result<Value, CoreClientError> {
-        self.request_json(
-            CoreRoute::ComputerClick,
-            Method::POST,
-            Some(json!({ "id": id })),
-        )
-        .await
-    }
-
-    pub async fn computer_type(&self, id: String, text: String) -> Result<Value, CoreClientError> {
-        self.request_json(
-            CoreRoute::ComputerType,
-            Method::POST,
-            Some(json!({ "id": id, "text": text })),
         )
         .await
     }
@@ -257,41 +210,6 @@ pub async fn core_voice_state(
     state: tauri::State<'_, CoreClient>,
 ) -> Result<Value, String> {
     state.voice_state(voice_state).await.map_err(command_error)
-}
-
-#[tauri::command]
-pub async fn core_computer_status(state: tauri::State<'_, CoreClient>) -> Result<Value, String> {
-    state.computer_status().await.map_err(command_error)
-}
-
-#[tauri::command]
-pub async fn core_computer_context(state: tauri::State<'_, CoreClient>) -> Result<Value, String> {
-    state.computer_context().await.map_err(command_error)
-}
-
-#[tauri::command]
-pub async fn core_computer_session(
-    action: String,
-    state: tauri::State<'_, CoreClient>,
-) -> Result<Value, String> {
-    state.computer_session(action).await.map_err(command_error)
-}
-
-#[tauri::command]
-pub async fn core_computer_click(
-    id: String,
-    state: tauri::State<'_, CoreClient>,
-) -> Result<Value, String> {
-    state.computer_click(id).await.map_err(command_error)
-}
-
-#[tauri::command]
-pub async fn core_computer_type(
-    id: String,
-    text: String,
-    state: tauri::State<'_, CoreClient>,
-) -> Result<Value, String> {
-    state.computer_type(id, text).await.map_err(command_error)
 }
 
 #[cfg(test)]
