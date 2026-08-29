@@ -207,7 +207,15 @@ async function refreshStatus() {
     const status = await orbitInvoke<CoreStatus>("core_status"); renderRuntime(status);
     if (status.localBrain?.running) { setConnection(`Lokal hjärna: ${status.localBrain.model}`, "ready"); if (!thinking) presenceCopy.textContent = "Jag är här. Vad vill du göra?"; homeGreeting.textContent = "ORBIT är vaken och din lokala hjärna är ansluten."; coreReady = true; input.disabled = false; sendButton.disabled = false; micButton.disabled = false; updateComputerMode(status.computerMode ?? { active: false }); return; }
     setConnection("Core körs, Ollama saknas", "failed"); coreReady = false; updateComputerMode({ active: false }); if (!thinking) presenceCopy.textContent = "Core är vaken, men jag hittar ingen lokal modell ännu.";
-  } catch { setConnection("Väntar på Core", "waiting"); coreReady = false; renderRuntime({ runtimeState: "offline", localBrain: null }); updateComputerMode({ active: false }); if (!thinking) presenceCopy.textContent = "Jag vaknar och letar efter min lokala hjärna."; homeGreeting.textContent = "Starta ORBIT så ansluter vi här automatiskt."; }
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : typeof error === "string" ? error : "Local Core is unavailable.";
+    setConnection("Core behöver åtgärd", "failed");
+    coreReady = false;
+    renderRuntime({ runtimeState: "offline", localBrain: null });
+    updateComputerMode({ active: false });
+    if (!thinking) presenceCopy.textContent = detail;
+    homeGreeting.textContent = "Core kunde inte verifieras lokalt.";
+  }
 }
 
 form.addEventListener("submit", async (event) => {

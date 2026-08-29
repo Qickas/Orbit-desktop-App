@@ -1,9 +1,11 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
-use keyring::Entry;
+use keyring_core::api::CredentialStoreApi;
 use reqwest::{Client, Method, StatusCode, Url};
 use serde_json::{json, Value};
 use thiserror::Error;
+use windows_native_keyring_store::Store;
 
 const CORE_SERVICE: &str = "orbit-core.local-client-auth";
 const CORE_ACCOUNT: &str = "loopback-core";
@@ -33,16 +35,32 @@ pub struct OsCredentialStore;
 
 impl CredentialSource for OsCredentialStore {
     fn load(&self) -> Result<String, CoreClientError> {
-        let entry =
-            Entry::new(CORE_SERVICE, CORE_ACCOUNT).map_err(|_| CoreClientError::CredentialStore)?;
-        let token = entry
-            .get_password()
+        let store = Store::new()
             .map_err(|_| CoreClientError::CredentialStore)?;
-        if token.is_empty() {
-            return Err(CoreClientError::CredentialMissing);
+
+        // Python WinVault uses the service target for the current token and
+        // retains an older token under "account@service" during rotation.
+        for target in credential_targets() {
+            let modifiers = HashMap::from([("target", target.as_str())]);
+            let entry = store
+                .build(CORE_SERVICE, CORE_ACCOUNT, Some(&modifiers))
+                .map_err(|_| CoreClientError::CredentialStore)?;
+            if let Ok(token) = entry.get_password() {
+                if !token.is_empty() {
+                    return Ok(token);
+                }
+            }
         }
-        Ok(token)
+
+        Err(CoreClientError::CredentialMissing)
     }
+}
+
+fn credential_targets() -> [String; 2] {
+    [
+        CORE_SERVICE.to_string(),
+        format!("{CORE_ACCOUNT}@{CORE_SERVICE}"),
+    ]
 }
 
 #[derive(Clone, Copy)]
@@ -246,5 +264,16 @@ mod tests {
         let error = CoreClientError::Unauthorized.to_string();
         assert_eq!(error, "Local Core rejected authentication.");
         assert!(!error.contains("token"));
+    }
+
+    #[test]
+    fn credential_targets_match_python_winvault_rotation_order() {
+        assert_eq!(
+            credential_targets(),
+            [
+                "orbit-core.local-client-auth".to_string(),
+                "loopback-core@orbit-core.local-client-auth".to_string(),
+            ]
+        );
     }
 }
