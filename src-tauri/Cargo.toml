@@ -1,0 +1,16 @@
+[package]
+name = "orbit-desktop"
+version = "0.1.0"
+description = "ORBIT local desktop companion"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+keyring-core = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = "1"
+thiserror = "2"
+windows-native-keyring-store = "1.1"
