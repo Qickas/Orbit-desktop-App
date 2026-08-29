@@ -1,0 +1,33 @@
+name: Desktop CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/local-core-auth
+  pull_request:
+
+jobs:
+  desktop:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Test Rust desktop host
+        working-directory: src-tauri
+        run: cargo test

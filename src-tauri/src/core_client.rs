@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use keyring_core::api::CredentialStoreApi;
+use keyring_core::{api::CredentialStoreApi, Error as KeyringError};
 use reqwest::{Client, Method, StatusCode, Url};
 use serde_json::{json, Value};
 use thiserror::Error;
@@ -35,24 +35,19 @@ pub struct OsCredentialStore;
 
 impl CredentialSource for OsCredentialStore {
     fn load(&self) -> Result<String, CoreClientError> {
-        let store = Store::new()
-            .map_err(|_| CoreClientError::CredentialStore)?;
+        let store = Store::new().map_err(|_| CoreClientError::CredentialStore)?;
 
-        // Python WinVault uses the service target for the current token and
-        // retains an older token under "account@service" during rotation.
-        for target in credential_targets() {
-            let modifiers = HashMap::from([("target", target.as_str())]);
+        load_credential_from_targets(|target| {
+            let modifiers = HashMap::from([("target", target)]);
             let entry = store
                 .build(CORE_SERVICE, CORE_ACCOUNT, Some(&modifiers))
                 .map_err(|_| CoreClientError::CredentialStore)?;
-            if let Ok(token) = entry.get_password() {
-                if !token.is_empty() {
-                    return Ok(token);
-                }
+            match entry.get_password() {
+                Ok(token) => Ok(Some(token)),
+                Err(KeyringError::NoEntry) => Ok(None),
+                Err(_) => Err(CoreClientError::CredentialStore),
             }
-        }
-
-        Err(CoreClientError::CredentialMissing)
+        })
     }
 }
 
@@ -61,6 +56,23 @@ fn credential_targets() -> [String; 2] {
         CORE_SERVICE.to_string(),
         format!("{CORE_ACCOUNT}@{CORE_SERVICE}"),
     ]
+}
+
+fn load_credential_from_targets<F>(mut load: F) -> Result<String, CoreClientError>
+where
+    F: FnMut(&str) -> Result<Option<String>, CoreClientError>,
+{
+    // Python WinVault stores the current value under the service target.
+    // The account@service target is legacy rotation compatibility only.
+    for target in credential_targets() {
+        if let Some(token) = load(&target)? {
+            if !token.is_empty() {
+                return Ok(token);
+            }
+        }
+    }
+
+    Err(CoreClientError::CredentialMissing)
 }
 
 #[derive(Clone, Copy)]
@@ -275,5 +287,60 @@ mod tests {
                 "loopback-core@orbit-core.local-client-auth".to_string(),
             ]
         );
+    }
+
+    #[test]
+    fn current_python_service_credential_wins_over_legacy_rotation_token() {
+        let current = "current-token";
+        let legacy = "legacy-rotation-token";
+        let token = load_credential_from_targets(|target| {
+            Ok(match target {
+                "orbit-core.local-client-auth" => Some(current.to_string()),
+                "loopback-core@orbit-core.local-client-auth" => Some(legacy.to_string()),
+                _ => None,
+            })
+        })
+        .unwrap();
+
+        assert_eq!(token, current);
+    }
+
+    #[test]
+    fn legacy_rotation_token_is_used_only_when_current_credential_is_missing() {
+        let token = load_credential_from_targets(|target| {
+            Ok(match target {
+                "orbit-core.local-client-auth" => None,
+                "loopback-core@orbit-core.local-client-auth" => Some("legacy-token".to_string()),
+                _ => None,
+            })
+        })
+        .unwrap();
+
+        assert_eq!(token, "legacy-token");
+    }
+
+    #[test]
+    fn missing_current_and_legacy_credentials_fail_closed() {
+        let error = load_credential_from_targets(|_| Ok(None)).unwrap_err();
+
+        assert!(matches!(error, CoreClientError::CredentialMissing));
+        assert_eq!(error.to_string(), "Local Core credential is unavailable.");
+    }
+
+    #[test]
+    fn credential_store_failure_never_falls_back_to_a_stale_token() {
+        let mut legacy_was_read = false;
+        let error = load_credential_from_targets(|target| {
+            if target == "orbit-core.local-client-auth" {
+                return Err(CoreClientError::CredentialStore);
+            }
+            legacy_was_read = true;
+            Ok(Some("legacy-token".to_string()))
+        })
+        .unwrap_err();
+
+        assert!(matches!(error, CoreClientError::CredentialStore));
+        assert!(!legacy_was_read);
+        assert!(!error.to_string().contains("legacy-token"));
     }
 }
